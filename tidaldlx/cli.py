@@ -36,8 +36,8 @@ if __name__ == "__main__":
         prompt = PromptForLogin(notify)
 
         if prompt.needs_login(session):
-            prompt.prompt_for_login(session)
-            if session.check_login():
+            logged_in = prompt.prompt_for_login(session)
+            if logged_in:
                 token_store.store(session.get_token())
         else:
             print("Already logged in")
