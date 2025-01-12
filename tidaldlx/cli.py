@@ -18,12 +18,7 @@ def get_session(token_store: TokenStore):
     if not session.check_login():
         try:
             token = token_store.retrieve()
-            session.load_oauth_session(
-                token_type=token.token_type,
-                access_token=token.access_token,
-                refresh_token=token.refresh_token,
-                expiry_time=token.expiry_time,
-            )
+            session.load_token(token)
         except NotFoundError:
             pass
 
