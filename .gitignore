@@ -2,3 +2,5 @@
 .dmypy.json
 token.json
 .DS_Store
+
+test
