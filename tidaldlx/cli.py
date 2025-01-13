@@ -1,5 +1,6 @@
 import argparse
 
+from tidaldlx.lib.files.downloader import get_downloader
 from tidaldlx.lib.tokenstore.store import TokenStore, NotFoundError, get_token_store
 from tidaldlx.lib.tidal.config import get_tidal_config
 from tidaldlx.lib.tidal.login.session import get_tidal_session
@@ -10,6 +11,10 @@ parser = argparse.ArgumentParser(description="tidaldlx")
 subcommand = parser.add_subparsers(dest="command")
 
 login = subcommand.add_parser("login", help="Log in to Tidal")
+
+download_favorites = subcommand.add_parser(
+    "download-favorites", help="List favorite tracks"
+)
 
 
 def get_session(token_store: TokenStore):
@@ -41,5 +46,12 @@ if __name__ == "__main__":
                 token_store.store(session.get_token())
         else:
             print("Already logged in")
-    else:
-        print("Unknown command")
+    elif args.command == "download-favorites":
+        from tidaldlx.lib.tidal.tracks.favorites import fetch_all_favorite_tracks
+
+        token_store = get_token_store()
+        session = get_session(token_store)
+
+        downloader = get_downloader("./test")
+
+        downloader.download_tidal_tracks(fetch_all_favorite_tracks(session))
