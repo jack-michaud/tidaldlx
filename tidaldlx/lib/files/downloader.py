@@ -1,3 +1,4 @@
+import os
 import requests
 from pathlib import Path
 from typing import Iterator, Protocol
@@ -26,9 +27,23 @@ class SingleThreadedDownloader(Downloader):
     def download_tidal_track(self, track: Track, attempts: int = 0) -> None:
         file_name = Path(get_file_name(track))
 
+        base_name = os.path.splitext(file_name)[0]
+
+        # If any file with this base name (any extension)
+        # exists, we will skip it.
+        if any(
+            f.name.startswith(base_name)
+            for f in self.target_directory.glob(f"{base_name}*")
+        ):
+            print(f"Skipping {base_name}, already downloaded!")
+            return
+
         destination = self.target_directory / file_name
 
         print(f"Downloading {file_name} to {destination}")
+
+        if destination.exists():
+            return
 
         with open(destination, "wb") as f:
             try:
