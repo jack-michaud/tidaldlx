@@ -3,11 +3,15 @@ from tidaldlx.lib.tidal.login.session import Session
 from tidaldlx.lib.tidal.tracks.track import Track
 
 
-def fetch_all_favorite_tracks(session: Session) -> Iterator[Track]:
+def fetch_all_favorite_tracks(
+    session: Session, limit: int | None = None
+) -> Iterator[Track]:
     offset = 0
-    limit = 1000
+    batch_limit = 1000
     while True:
-        tracks = session.user.favorites.tracks(limit=limit, offset=offset, order="DATE")
+        tracks = session.user.favorites.tracks(
+            limit=batch_limit, offset=offset, order="DATE"
+        )
 
         if not tracks:
             break
@@ -15,4 +19,9 @@ def fetch_all_favorite_tracks(session: Session) -> Iterator[Track]:
         for track in tracks:
             yield track
 
-        offset += limit
+            if limit is not None:
+                limit -= 1
+                if limit == 0:
+                    break
+
+        offset += batch_limit

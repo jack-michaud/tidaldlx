@@ -22,6 +22,13 @@ download_favorites.add_argument(
     default="/Users/jack/Music/DjDownloads/Tidal/",
 )
 
+download_favorites.add_argument(
+    "--limit",
+    help="Limit the number of tracks to download",
+    type=int,
+    default=None,
+)
+
 
 def get_session(token_store: TokenStore):
     session = get_tidal_session(get_tidal_config())
@@ -60,4 +67,4 @@ if __name__ == "__main__":
 
         downloader = get_downloader(args.output_dir)
 
-        downloader.download_tidal_tracks(fetch_all_favorite_tracks(session))
+        downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit))
