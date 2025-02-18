@@ -16,6 +16,12 @@ download_favorites = subcommand.add_parser(
     "download-favorites", help="List favorite tracks"
 )
 
+download_favorites.add_argument(
+    "--output-dir",
+    help="Directory to download tracks to",
+    default="/Users/jack/Music/DjDownloads/Tidal/",
+)
+
 
 def get_session(token_store: TokenStore):
     session = get_tidal_session(get_tidal_config())
@@ -52,6 +58,6 @@ if __name__ == "__main__":
         token_store = get_token_store()
         session = get_session(token_store)
 
-        downloader = get_downloader("./test")
+        downloader = get_downloader(args.output_dir)
 
         downloader.download_tidal_tracks(fetch_all_favorite_tracks(session))
