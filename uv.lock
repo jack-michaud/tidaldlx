@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [[package]]
@@ -70,6 +71,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0b/21/59d355a976cb924d050176a9430bbea75851eeb03cbd281b3eb1a14ae1e9/mpegdash-0.4.0.tar.gz", hash = "sha256:65368c7a367c6875eb8c456a08644eb0708981a745044da0c9e942a3bc2b6389", size = 12338 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ab/1a/5be778993af7c2079e7a24dc208424af6fe1b6392dfaac268a8cf42ba842/mpegdash-0.4.0-py3-none-any.whl", hash = "sha256:d07f6e1f2a67ddce1be501e3ad7abc29a2d6a7b1830b4da974b49c2ebe99cf2a", size = 10702 },
+]
+
+[[package]]
+name = "mutagen"
+version = "1.47.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/e6/64bc71b74eef4b68e61eb921dcf72dabd9e4ec4af1e11891bbd312ccbb77/mutagen-1.47.0.tar.gz", hash = "sha256:719fadef0a978c31b4cf3c956261b3c58b6948b32023078a2117b1de09f0fc99", size = 1274186 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b0/7a/620f945b96be1f6ee357d211d5bf74ab1b7fe72a9f1525aafbfe3aee6875/mutagen-1.47.0-py3-none-any.whl", hash = "sha256:edd96f50c5907a9539d8e5bba7245f62c9f520aef333d13392a79a4f70aca719", size = 194391 },
 ]
 
 [[package]]
@@ -179,6 +189,7 @@ name = "tidaldlx"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "mutagen" },
     { name = "plyer" },
     { name = "tidalapi" },
 ]
@@ -190,6 +201,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "mutagen", specifier = ">=1.47.0" },
     { name = "plyer", specifier = ">=2.1.0" },
     { name = "tidalapi", specifier = ">=0.8.3" },
 ]

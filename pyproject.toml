@@ -5,6 +5,7 @@ description = "A Tidal Downloader for one-way syncing your liked songs to a fold
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "mutagen>=1.47.0",
     "plyer>=2.1.0",
     "tidalapi>=0.8.3",
 ]
