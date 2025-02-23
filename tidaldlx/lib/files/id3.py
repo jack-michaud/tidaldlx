@@ -1,63 +1,123 @@
-from mutagen.id3 import ID3, TIT2, TPE1, TALB, TRCK, TYER, COMM, error
+from mutagen.id3 import ID3
 from mutagen.mp3 import MP3
-from tidaldlx_contrib.serato_tags.database_v2 import parse
 from mutagen.mp4 import MP4
+from mutagen.flac import FLAC
+
+DEFAULT_TAG_NORMALIZER = {
+    "comment": ["©cmt"],
+    "title": ["©nam"],
+    "artist": ["©ART"],
+    "album": ["©alb"],
+    "tempo": ["tmpo"],
+    "genre": ["@gen"],
+}
+
+FLAC_TAG_NORMALIZER = {
+    "comment": ["comment"],
+    "title": ["title"],
+    "artist": ["artist"],
+    "album": ["album"],
+    "date": ["date"],
+    "tempo": ["bpm"],
+    "genre": ["genre"],
+}
 
 
-def add_id3_tags(
+def _get_metadata_container_for_file(file_path: str):
+    if file_path.endswith(".m4a"):
+        return MP4(file_path)
+    elif file_path.endswith(".mp4"):
+        return MP4(file_path)
+    elif file_path.endswith(".mp3"):
+        return MP3(file_path, ID3=ID3)
+    elif file_path.endswith(".flac"):
+        return FLAC(file_path)
+    else:
+        raise ValueError(f"Unsupported file type: {file_path}")
+
+
+def _extract_existing_raw_tags(
     file_path: str,
-    title: str,
-    artist: str,
-    album: str,
-    track_number: int,
-    year: str,
-    comment: str,
-):
-    try:
-        audio = MP3(file_path, ID3=ID3)
-    except error as e:
-        print(f"Error reading file {file_path}: {e}")
-        return
+) -> dict[str, str]:
+    container = _get_metadata_container_for_file(file_path)
+    if isinstance(container, FLAC):
+        raw_tags = container
+    else:
+        raw_tags = container.tags
 
-    if audio.tags is None:
-        audio.add_tags()
+    return raw_tags  # type: ignore
 
-    # Add or update tags
-    audio.tags.add(TIT2(encoding=3, text=title))
-    audio.tags.add(TPE1(encoding=3, text=[artist]))
-    audio.tags.add(TALB(encoding=3, text=album))
-    audio.tags.add(TRCK(encoding=3, text=str(track_number)))
-    audio.tags.add(TYER(encoding=3, text=year))
-    audio.tags.add(COMM(encoding=3, lang="eng", desc="desc", text=[comment]))
 
-    # Save the file
-    try:
-        audio.save()
-    except error as e:
-        print(f"Error saving tags to {file_path}: {e}")
+def _get_tag_for_writing(
+    tag: str,
+    normalizer: dict[str, list[str]],
+) -> str:
+    return normalizer.get(tag, [tag])[0]
 
 
 def read_id3_tags(file_path: str):
-    try:
-        if file_path.endswith(".mp4"):
-            audio = MP4(file_path)
-        elif file_path.endswith(".mp3"):
-            audio = MP3(file_path, ID3=ID3)
-        else:
-            raise ValueError(f"Unsupported file type: {file_path}")
-    except error as e:
-        print(f"Error reading file {file_path}: {e}")
-        return
+    raw_tags = _extract_existing_raw_tags(file_path)
 
-    return audio.tags
+    tags = {}
+
+    if file_path.endswith(".flac"):
+        tag_normalizer = FLAC_TAG_NORMALIZER
+    else:
+        tag_normalizer = DEFAULT_TAG_NORMALIZER
+
+    for key, value in tag_normalizer.items():
+        for tag in value:
+            try:
+                if raw_value := raw_tags.get(tag):
+                    tags[key] = raw_value
+                    break
+            except ValueError as e:
+                print(f"Error reading tag {tag}: {e}")
+
+    return tags
 
 
-def read_serato_tags(file_path: str):
-    with open(file_path, "rb") as fp:
-        return dict(parse(fp))
+def write_tags(
+    *,
+    file_path: str,
+    title: str | None = None,
+    artist: str | None = None,
+    album: str | None = None,
+    comment: str | None = None,
+    genre: str | None = None,
+) -> None:
+    audio = _get_metadata_container_for_file(file_path)
+    existing_tags = _extract_existing_raw_tags(file_path)
 
+    if file_path.endswith(".flac"):
+        tag_normalizer = FLAC_TAG_NORMALIZER
+    else:
+        tag_normalizer = DEFAULT_TAG_NORMALIZER
 
-# Example usage:
-# add_id3_tags('path/to/file.mp3', 'Song Title', 'Artist Name', 'Album Name', 1, '2023', 'This is a comment')
-# tags = read_id3_tags('path/to/file.mp3')
-# print(tags)
+    if title is not None:
+        tag = _get_tag_for_writing("title", tag_normalizer)
+        existing_tags[tag] = title
+
+    if artist is not None:
+        tag = _get_tag_for_writing("artist", tag_normalizer)
+        existing_tags[tag] = artist
+
+    if album is not None:
+        tag = _get_tag_for_writing("album", tag_normalizer)
+        existing_tags[tag] = album
+
+    if comment is not None:
+        tag = _get_tag_for_writing("comment", tag_normalizer)
+        existing_tags[tag] = comment
+
+    if genre is not None:
+        tag = _get_tag_for_writing("genre", tag_normalizer)
+        existing_tags[tag] = genre
+
+    if isinstance(audio, FLAC):
+        for key, value in existing_tags.items():
+            audio[key] = value
+        audio.save()
+    else:
+        audio.tags = existing_tags
+        audio.save()

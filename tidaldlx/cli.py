@@ -29,6 +29,35 @@ download_favorites.add_argument(
     default=None,
 )
 
+read_serato_tags = subcommand.add_parser(
+    "read-serato-tags", help="Read Serato tags from files"
+)
+
+read_serato_tags.add_argument(
+    "files",
+    help="Files to read Serato tags from",
+    nargs="+",
+)
+
+write_serato_tags = subcommand.add_parser(
+    "write-serato-tags", help="Write Serato tags to files"
+)
+
+write_serato_tags.add_argument(
+    "file",
+    help="File to write Serato tags to",
+)
+
+write_serato_tags.add_argument(
+    "--title",
+    help="Title of the track",
+)
+
+write_serato_tags.add_argument(
+    "--artist",
+    help="Artist of the track",
+)
+
 
 def get_session(token_store: TokenStore):
     session = get_tidal_session(get_tidal_config())
@@ -68,3 +97,26 @@ if __name__ == "__main__":
         downloader = get_downloader(args.output_dir)
 
         downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit))
+
+    elif args.command == "read-serato-tags":
+        from tidaldlx.lib.files.id3 import read_id3_tags
+
+        for file_path in args.files:
+            print(f"File: {file_path}")
+            id3_tags = read_id3_tags(file_path)
+
+            if id3_tags is None:
+                print(f"Error reading tags from {file_path}")
+                continue
+
+            for key, value in id3_tags.items():
+                print(f"{key}: {value}")
+
+    elif args.command == "write-serato-tags":
+        from tidaldlx.lib.files.id3 import write_tags
+
+        write_tags(
+            file_path=args.file,
+            title=args.title,
+            artist=args.artist,
+        )

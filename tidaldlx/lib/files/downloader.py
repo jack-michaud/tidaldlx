@@ -3,6 +3,7 @@ import requests
 from pathlib import Path
 from typing import Iterator, Protocol
 
+from tidaldlx.lib.files.id3 import read_id3_tags
 from tidaldlx.lib.files.track_to_file import (
     TryAgainLaterException,
     get_downloadable_url,
@@ -31,18 +32,18 @@ class SingleThreadedDownloader(Downloader):
 
         # If any file with this base name (any extension)
         # exists, we will skip it.
-        if any(
-            f.name.startswith(base_name)
-            for f in self.target_directory.glob(f"{base_name}*")
-        ):
-            print(f"Skipping {base_name}, already downloaded!")
-            return
+        for f in self.target_directory.glob(f"{base_name}*"):
+            if f.name.startswith(base_name):
+                print(f"Skipping {base_name}, already downloaded!")
+                self._add_id3_tags(f, track)
+                return
 
         destination = self.target_directory / file_name
 
         print(f"Downloading {file_name} to {destination}")
 
         if destination.exists():
+            self._add_id3_tags(destination, track)
             return
 
         with open(destination, "wb") as f:
@@ -65,6 +66,11 @@ class SingleThreadedDownloader(Downloader):
                 f.write(chunk)
 
         print("Done!")
+
+        self._add_id3_tags(destination, track)
+
+    def _add_id3_tags(self, file_path: Path, track: Track) -> None:
+        print(read_id3_tags(file_path.absolute().as_posix()))
 
 
 def get_downloader(target_directory: str) -> Downloader:
