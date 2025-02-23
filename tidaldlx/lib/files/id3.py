@@ -1,5 +1,6 @@
 from mutagen.id3 import ID3, TIT2, TPE1, TALB, TRCK, TYER, COMM, error
 from mutagen.mp3 import MP3
+from tidaldlx_contrib.serato_tags.database_v2 import parse
 from mutagen.mp4 import MP4
 
 
@@ -49,9 +50,6 @@ def read_id3_tags(file_path: str):
         return
 
     return audio.tags
-
-
-from contrib.serato_tags.database_v2 import parse
 
 
 def read_serato_tags(file_path: str):
