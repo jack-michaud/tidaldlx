@@ -4,7 +4,7 @@ from tidaldlx.lib.tidal.tracks.track import Track
 
 def get_file_name(track: Track) -> str:
     artist_names = ", ".join(artist.name for artist in track.artists if artist.name)
-    return f"{artist_names} - {track.full_name}.mp4"  # TODO: when configuring quality, this may become flac.
+    return f"{artist_names} - {track.full_name}.flac"  # TODO: when configuring quality, this may become flac.
 
 
 class TryAgainLaterException(Exception):
