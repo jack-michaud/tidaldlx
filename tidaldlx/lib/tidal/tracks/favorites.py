@@ -17,7 +17,7 @@ def fetch_all_favorite_tracks(
             break
 
         for track in tracks:
-            yield track
+            yield Track(session, media_id=track.id)
 
             if limit is not None:
                 limit -= 1
