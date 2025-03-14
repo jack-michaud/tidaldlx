@@ -4,10 +4,36 @@ A Tidal Downloader for one-way syncing your liked songs to a folder.
 
 ## Installation
 
-You can install TidalDLX using pipx:
+### Using pipx (recommended)
+
+[pipx](https://pypa.github.io/pipx/) allows you to install and run Python applications in isolated environments:
 
 ```bash
+# Install pipx if you don't have it
+python -m pip install --user pipx
+python -m pipx ensurepath
+
+# Install tidaldlx
 pipx install git+https://github.com/jack-michaud/tidaldlx.git
+```
+
+### Using pip
+
+You can also install with pip directly:
+
+```bash
+pip install git+https://github.com/jack-michaud/tidaldlx.git
+```
+
+### From source
+
+```bash
+# Clone the repository
+git clone https://github.com/jack-michaud/tidaldlx.git
+cd tidaldlx
+
+# Install in development mode
+pip install -e .
 ```
 
 ## Usage
