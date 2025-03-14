@@ -29,6 +29,13 @@ download_favorites.add_argument(
     default=None,
 )
 
+download_favorites.add_argument(
+    "--reverse",
+    help="Download tracks in reverse order (oldest first)",
+    action="store_true",
+    default=False,
+)
+
 read_serato_tags = subcommand.add_parser(
     "read-serato-tags", help="Read Serato tags from files"
 )
@@ -96,7 +103,7 @@ if __name__ == "__main__":
 
         downloader = get_downloader(args.output_dir)
 
-        downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit))
+        downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit, args.reverse))
 
     elif args.command == "read-serato-tags":
         from tidaldlx.lib.files.id3 import read_id3_tags

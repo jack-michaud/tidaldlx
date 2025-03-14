@@ -4,13 +4,17 @@ from tidaldlx.lib.tidal.tracks.track import Track
 
 
 def fetch_all_favorite_tracks(
-    session: Session, limit: int | None = None
+    session: Session, limit: int | None = None, reverse: bool = False
 ) -> Iterator[Track]:
     offset = 0
     batch_limit = 1000
+
     while True:
         tracks = session.user.favorites.tracks(
-            limit=batch_limit, offset=offset, order="DATE"
+            limit=batch_limit,
+            offset=offset,
+            order="DATE",
+            order_direction="ASC" if reverse else "DESC",
         )
 
         if not tracks:
