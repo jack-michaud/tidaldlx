@@ -1,0 +1,45 @@
+# TidalDLX
+
+A Tidal Downloader for one-way syncing your liked songs to a folder.
+
+## Installation
+
+You can install TidalDLX using pipx:
+
+```bash
+pipx install git+https://github.com/jack-michaud/tidaldlx.git
+```
+
+## Usage
+
+First, log in to Tidal:
+
+```bash
+tidaldlx login
+```
+
+Then download your favorite tracks:
+
+```bash
+tidaldlx download-favorites --output-dir /path/to/download/directory
+```
+
+### Options
+
+- `--output-dir`: Directory to download tracks to (default: ~/Music/Tidal)
+- `--limit`: Limit the number of tracks to download
+- `--reverse`: Download tracks in reverse order (oldest first)
+
+### Serato Tags
+
+TidalDLX also includes utilities for working with Serato tags:
+
+Read tags from files:
+```bash
+tidaldlx read-serato-tags file1.flac file2.flac
+```
+
+Write tags to a file:
+```bash
+tidaldlx write-serato-tags file.flac --title "Track Title" --artist "Artist Name"
+```

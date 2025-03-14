@@ -1,4 +1,6 @@
 import argparse
+import os
+from pathlib import Path
 
 from tidaldlx.lib.files.downloader import get_downloader
 from tidaldlx.lib.tokenstore.store import TokenStore, NotFoundError, get_token_store
@@ -19,7 +21,7 @@ download_favorites = subcommand.add_parser(
 download_favorites.add_argument(
     "--output-dir",
     help="Directory to download tracks to",
-    default="/Users/jack/Music/DjDownloads/Tidal/",
+    default=str(Path.home() / "Music" / "Tidal"),
 )
 
 download_favorites.add_argument(
@@ -79,8 +81,12 @@ def get_session(token_store: TokenStore):
     return session
 
 
-if __name__ == "__main__":
+def main():
     args = parser.parse_args()
+    if not args.command:
+        parser.print_help()
+        return
+        
     if args.command == "login":
         from tidaldlx.lib.tidal.login.prompt import PromptForLogin
 
@@ -127,3 +133,7 @@ if __name__ == "__main__":
             title=args.title,
             artist=args.artist,
         )
+
+
+if __name__ == "__main__":
+    main()
