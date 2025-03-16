@@ -9,4 +9,4 @@ class Track(_Track):
         return self.album.name
 
     def get_title_tag(self) -> str | None:
-        return self.name
+        return self.full_name
