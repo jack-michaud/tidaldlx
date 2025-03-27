@@ -55,6 +55,7 @@ tidaldlx download-favorites --output-dir /path/to/download/directory
 - `--output-dir`: Directory to download tracks to (default: ~/Music/Tidal)
 - `--limit`: Limit the number of tracks to download
 - `--reverse`: Download tracks in reverse order (oldest first)
+- `--stop-on-existing`: Stop downloading when an already downloaded file is encountered
 
 ### Serato Tags
 

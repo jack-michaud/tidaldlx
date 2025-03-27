@@ -38,6 +38,13 @@ download_favorites.add_argument(
     default=False,
 )
 
+download_favorites.add_argument(
+    "--stop-on-existing",
+    help="Stop downloading when an already downloaded file is encountered",
+    action="store_true",
+    default=False,
+)
+
 read_serato_tags = subcommand.add_parser(
     "read-serato-tags", help="Read Serato tags from files"
 )
@@ -107,7 +114,7 @@ def main():
         token_store = get_token_store()
         session = get_session(token_store)
 
-        downloader = get_downloader(args.output_dir)
+        downloader = get_downloader(args.output_dir, args.stop_on_existing)
 
         downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit, args.reverse))
 
