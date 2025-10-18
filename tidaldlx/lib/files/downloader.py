@@ -41,7 +41,8 @@ class SingleThreadedDownloader(Downloader):
         # If any file with this base name (any extension)
         # exists, we will skip it.
         for f in self.target_directory.iterdir():
-            if f.name.startswith(base_name):
+            whole_name_before_last_dot = os.path.splitext(f.name)[0]
+            if whole_name_before_last_dot == base_name:
                 print(f"Skipping {base_name}, already downloaded!")
                 self._add_id3_tags(f, track)
                 return False
