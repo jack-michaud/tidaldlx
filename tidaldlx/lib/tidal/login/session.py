@@ -28,6 +28,13 @@ class Session(_Session):
             expiry_time=token.expiry_time,
         )
 
+    def clear_session(self) -> None:
+        """Clear session authentication state"""
+        self.token_type = None
+        self.access_token = None
+        self.refresh_token = None
+        self.expiry_time = None
+
 
 def get_tidal_session(config: Config) -> Session:
     return Session(config)

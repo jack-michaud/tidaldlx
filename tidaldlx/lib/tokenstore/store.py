@@ -22,6 +22,8 @@ class TokenStore(Protocol):
 
     def retrieve(self) -> Token: ...
 
+    def clear(self) -> None: ...
+
 
 class RawFileTokenStore(TokenStore):
     def __init__(self, file_path: str) -> None:
@@ -49,6 +51,14 @@ class RawFileTokenStore(TokenStore):
                 return Token(**token_data)
         except FileNotFoundError:
             raise NotFoundError("Token file not found")
+
+    def clear(self) -> None:
+        """Delete the cached token file"""
+        try:
+            import os
+            os.remove(self.file_path)
+        except FileNotFoundError:
+            pass
 
 
 def get_token_store() -> TokenStore:

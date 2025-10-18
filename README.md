@@ -70,3 +70,7 @@ Write tags to a file:
 ```bash
 tidaldlx write-serato-tags file.flac --title "Track Title" --artist "Artist Name"
 ```
+
+# Roadmap
+
+- [ ] Automatic updates for `tidalapi` library when client ID changes

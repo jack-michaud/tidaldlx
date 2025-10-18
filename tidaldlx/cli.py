@@ -2,6 +2,8 @@ import argparse
 import os
 from pathlib import Path
 
+from tidalapi.exceptions import AuthenticationError
+
 from tidaldlx.lib.files.downloader import get_downloader
 from tidaldlx.lib.tokenstore.store import TokenStore, NotFoundError, get_token_store
 from tidaldlx.lib.tidal.config import get_tidal_config
@@ -88,58 +90,93 @@ def get_session(token_store: TokenStore):
     return session
 
 
+def handle_auth_error(func):
+    """Decorator to handle AuthenticationError by clearing cached session"""
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except AuthenticationError as e:
+            print(f"Authentication failed: {e}")
+            print("Clearing cached session info...")
+            token_store = get_token_store()
+            token_store.clear()
+            print("\nCached session cleared.")
+            print("Please try logging in again: tidaldlx login")
+            print("\nNote: If the error persists, the tidalapi library's client credentials")
+            print("may need to be updated. This is managed by the tidalapi dependency.")
+    return wrapper
+
+
+@handle_auth_error
+def cmd_login(args):
+    from tidaldlx.lib.tidal.login.prompt import PromptForLogin
+
+    token_store = get_token_store()
+    notify = get_notify()
+    session = get_session(token_store)
+    prompt = PromptForLogin(notify)
+
+    if prompt.needs_login(session):
+        logged_in = prompt.prompt_for_login(session)
+        if logged_in:
+            token_store.store(session.get_token())
+    else:
+        print("Already logged in")
+
+
+@handle_auth_error
+def cmd_download_favorites(args):
+    from tidaldlx.lib.tidal.tracks.favorites import fetch_all_favorite_tracks
+
+    token_store = get_token_store()
+    session = get_session(token_store)
+
+    downloader = get_downloader(args.output_dir, args.stop_on_existing)
+    downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit, args.reverse))
+
+
+@handle_auth_error
+def cmd_read_serato_tags(args):
+    from tidaldlx.lib.files.id3 import read_id3_tags
+
+    for file_path in args.files:
+        print(f"File: {file_path}")
+        id3_tags = read_id3_tags(file_path)
+
+        if id3_tags is None:
+            print(f"Error reading tags from {file_path}")
+            continue
+
+        for key, value in id3_tags.items():
+            print(f"{key}: {value}")
+
+
+@handle_auth_error
+def cmd_write_serato_tags(args):
+    from tidaldlx.lib.files.id3 import write_tags
+
+    write_tags(
+        file_path=args.file,
+        title=args.title,
+        artist=args.artist,
+    )
+
+
 def main():
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
         return
-        
-    if args.command == "login":
-        from tidaldlx.lib.tidal.login.prompt import PromptForLogin
 
-        token_store = get_token_store()
-        notify = get_notify()
-        session = get_session(token_store)
-        prompt = PromptForLogin(notify)
+    commands = {
+        "login": cmd_login,
+        "download-favorites": cmd_download_favorites,
+        "read-serato-tags": cmd_read_serato_tags,
+        "write-serato-tags": cmd_write_serato_tags,
+    }
 
-        if prompt.needs_login(session):
-            logged_in = prompt.prompt_for_login(session)
-            if logged_in:
-                token_store.store(session.get_token())
-        else:
-            print("Already logged in")
-    elif args.command == "download-favorites":
-        from tidaldlx.lib.tidal.tracks.favorites import fetch_all_favorite_tracks
-
-        token_store = get_token_store()
-        session = get_session(token_store)
-
-        downloader = get_downloader(args.output_dir, args.stop_on_existing)
-
-        downloader.download_tidal_tracks(fetch_all_favorite_tracks(session, args.limit, args.reverse))
-
-    elif args.command == "read-serato-tags":
-        from tidaldlx.lib.files.id3 import read_id3_tags
-
-        for file_path in args.files:
-            print(f"File: {file_path}")
-            id3_tags = read_id3_tags(file_path)
-
-            if id3_tags is None:
-                print(f"Error reading tags from {file_path}")
-                continue
-
-            for key, value in id3_tags.items():
-                print(f"{key}: {value}")
-
-    elif args.command == "write-serato-tags":
-        from tidaldlx.lib.files.id3 import write_tags
-
-        write_tags(
-            file_path=args.file,
-            title=args.title,
-            artist=args.artist,
-        )
+    if args.command in commands:
+        commands[args.command](args)
 
 
 if __name__ == "__main__":
