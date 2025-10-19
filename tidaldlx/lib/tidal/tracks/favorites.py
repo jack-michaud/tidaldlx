@@ -1,4 +1,7 @@
 from typing import Iterator
+
+from tidalapi.types import ItemOrder, OrderDirection
+from tidalapi.user import LoggedInUser
 from tidaldlx.lib.tidal.login.session import Session
 from tidaldlx.lib.tidal.tracks.track import Track
 
@@ -10,18 +13,25 @@ def fetch_all_favorite_tracks(
     batch_limit = 1000
 
     while True:
+        assert session.user is not None
+        assert isinstance(session.user, LoggedInUser)
+
         tracks = session.user.favorites.tracks(
             limit=batch_limit,
             offset=offset,
-            order="DATE",
-            order_direction="ASC" if reverse else "DESC",
+            order=ItemOrder.Date,
+            order_direction=OrderDirection.Ascending
+            if reverse
+            else OrderDirection.Descending,
         )
 
         if not tracks:
             break
 
         for track in tracks:
-            yield Track(session, media_id=track.id)
+            yield Track(
+                session, media_id=str(track.id) if track.id is not None else None
+            )
 
             if limit is not None:
                 limit -= 1
